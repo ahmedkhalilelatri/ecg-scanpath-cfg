@@ -1,0 +1,136 @@
+# ============================================================================
+# ECG SCANPATH CONTEXT-FREE GRAMMAR
+# Complete grammar with 3 expert strategies
+# ============================================================================
+
+# START: Three alternative expert strategies
+S -> RhythmFirstStrategy | MorphologyFirstStrategy | RegionalFirstStrategy
+
+# ============================================================================
+# STRATEGY 1: RHYTHM-FIRST (Extended rhythm analysis before morphology)
+# ============================================================================
+
+RhythmFirstStrategy -> InitialAssessment ExtendedRhythmPhase ComponentPhase RegionalSweep
+
+# All strategies start with mandatory initial assessment
+InitialAssessment -> RhythmCheck RateCheck AxisCheck
+
+RhythmCheck -> 'II-Rhythm'
+RateCheck -> 'II-Rate'
+AxisCheck -> 'I-Axis' 'aVF-Axis'
+
+# Extended rhythm analysis (key characteristic of rhythm-first)
+ExtendedRhythmPhase -> RhythmVerify
+RhythmVerify -> 'V1-Rhythm' | 'V1-Rhythm' 'II-Rhythm'
+
+# Quick component checks
+ComponentPhase -> PWaveCheck PRCheck QRSCheck STCheck TWaveCheck QTCheck
+
+PWaveCheck -> PWaveLead | PWaveLead PWaveLead
+PWaveLead -> 'II-P' | 'V1-P' | 'I-P'
+
+PRCheck -> PRLead
+PRLead -> 'II-PR' | 'V1-PR'
+
+QRSCheck -> QRSLeadSeq
+QRSLeadSeq -> QRSLead QRSLead QRSLead | QRSLead QRSLead QRSLead QRSLead
+QRSLead -> 'I-QRS' | 'II-QRS' | 'III-QRS' | 'aVR-QRS' | 'aVL-QRS' | 'aVF-QRS' | 'V1-QRS' | 'V2-QRS' | 'V3-QRS' | 'V4-QRS' | 'V5-QRS' | 'V6-QRS'
+
+STCheck -> STLeadSeq
+STLeadSeq -> STLead STLead | STLead STLead STLead
+STLead -> 'II-ST' | 'III-ST' | 'aVF-ST' | 'V1-ST' | 'V2-ST' | 'V3-ST' | 'V4-ST' | 'V5-ST' | 'V6-ST'
+
+TWaveCheck -> TLeadSeq
+TLeadSeq -> TLead TLead | TLead TLead TLead
+TLead -> 'II-T' | 'III-T' | 'aVF-T' | 'V2-T' | 'V3-T' | 'V4-T' | 'V5-T' | 'V6-T'
+
+QTCheck -> QTLead
+QTLead -> 'II-QT'
+
+# Final regional sweep
+RegionalSweep -> LeadSeq
+LeadSeq -> Lead | Lead LeadSeq
+Lead -> 'I' | 'II' | 'III' | 'aVR' | 'aVL' | 'aVF' | 'V1' | 'V2' | 'V3' | 'V4' | 'V5' | 'V6'
+
+# ============================================================================
+# STRATEGY 2: MORPHOLOGY-FIRST (Deep component analysis with brief rhythm)
+# ============================================================================
+
+MorphologyFirstStrategy -> InitialAssessment BriefRhythm DeepMorphologyPhase RegionalSweep
+
+# Brief rhythm confirmation only
+BriefRhythm -> BriefRhythmCheck
+BriefRhythmCheck -> 'V1-Rhythm'
+
+# Extended morphology analysis (key characteristic)
+DeepMorphologyPhase -> ExtendedPWave ExtendedPR ExtendedQRS ExtendedST ExtendedT ExtendedQT
+
+ExtendedPWave -> PWaveSeq
+PWaveSeq -> PWaveLead PWaveLead PWaveLead | PWaveLead PWaveLead PWaveLead PWaveLead
+# PWaveLead already defined above
+
+ExtendedPR -> PRSeq
+PRSeq -> PRLead PRLead | PRLead PRLead PRLead
+# PRLead already defined above
+
+ExtendedQRS -> QRSLongSeq
+QRSLongSeq -> QRSLead QRSLead QRSLead QRSLead QRSLead | QRSLead QRSLead QRSLead QRSLead QRSLead QRSLead
+# QRSLead already defined above
+
+ExtendedST -> STLongSeq
+STLongSeq -> STLead STLead STLead STLead | STLead STLead STLead STLead STLead
+# STLead already defined above
+
+ExtendedT -> TLongSeq
+TLongSeq -> TLead TLead TLead TLead | TLead TLead TLead TLead TLead
+# TLead already defined above
+
+ExtendedQT -> QTLead QTLead
+# QTLead already defined above
+
+# ============================================================================
+# STRATEGY 3: REGIONAL-FIRST (Territory-by-territory systematic examination)
+# ============================================================================
+
+RegionalFirstStrategy -> InitialAssessment QuickMorphCheck SystematicRegionalExam
+
+# Quick morphology overview only
+QuickMorphCheck -> QuickP QuickQRS
+QuickP -> 'II-P' 'V1-P'
+QuickQRS -> 'II-QRS' 'V1-QRS'
+
+# Systematic examination of all territories (key characteristic)
+SystematicRegionalExam -> RegionalExamSeq
+RegionalExamSeq -> RegionalExam RegionalExam RegionalExam | RegionalExam RegionalExam RegionalExam RegionalExam
+
+RegionalExam -> InferiorExam | LateralExam | AnteriorExam | SeptalExam
+
+# Inferior leads (II, III, aVF)
+InferiorExam -> InferiorDetail
+InferiorDetail -> 'II-QRS' 'II-ST' 'II-T' | 'III-QRS' 'III-ST' 'III-T' | 'aVF-QRS' 'aVF-ST' 'aVF-T' | 'II-QRS' 'II-ST' | 'III-QRS' 'III-ST' | 'aVF-QRS' 'aVF-ST'
+
+# Lateral leads (I, aVL, V5, V6)
+LateralExam -> LateralDetail
+LateralDetail -> 'I-QRS' 'I-ST' 'I-T' | 'aVL-QRS' 'aVL-ST' 'aVL-T' | 'V5-QRS' 'V5-ST' 'V5-T' | 'V6-QRS' 'V6-ST' 'V6-T' | 'I-QRS' 'I-ST' | 'aVL-QRS' 'aVL-ST' | 'V5-QRS' 'V5-ST' | 'V6-QRS' 'V6-ST'
+
+# Anterior leads (V3, V4)
+AnteriorExam -> AnteriorDetail
+AnteriorDetail -> 'V3-QRS' 'V3-ST' 'V3-T' | 'V4-QRS' 'V4-ST' 'V4-T' | 'V3-QRS' 'V3-ST' | 'V4-QRS' 'V4-ST'
+
+# Septal leads (V1, V2)
+SeptalExam -> SeptalDetail
+SeptalDetail -> 'V1-QRS' 'V1-ST' 'V1-T' | 'V2-QRS' 'V2-ST' 'V2-T' | 'V1-QRS' 'V1-ST' | 'V2-QRS' 'V2-ST'
+
+# ============================================================================
+# OPTIONAL ADDITIONS FOR ABNORMALITY PATTERNS (Increases depth)
+# ============================================================================
+
+# Can be added to any strategy if scanpath includes abnormality investigation
+# Uncomment these lines if your generated data includes -ABNORMAL, -detail, -verify symbols
+
+# AbnormalityInvestigation -> AbnormalityDetection DeepDive Verification
+# AbnormalityDetection -> 'V3-ST-ABNORMAL' | 'V4-ST-ABNORMAL' | 'II-ST-ABNORMAL'
+# DeepDive -> DetailedCheck DetailedCheck | DetailedCheck DetailedCheck DetailedCheck
+# DetailedCheck -> 'V2-ST-detail' | 'V3-ST-detail' | 'V4-ST-detail' | 'II-ST-detail'
+# Verification -> VerifyCheck VerifyCheck
+# VerifyCheck -> 'V2-ST-verify' | 'V3-ST-verify' | 'V4-ST-verify'
